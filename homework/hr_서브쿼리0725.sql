@@ -90,15 +90,15 @@ select
     jobs.job_title as 업무,
     emp.salary as 급여,
     emp.department_id as 부서번호,
-    avg_sal.avg(salary) as '부서 평균연봉'
-from 
+    avg_sal.평균연봉 as '부서 평균연봉'
+from -- 조회 해야 할 세 테이블과 서브쿼리로 조회한 테이블까지 같이 조인
 	employees emp,
-    departments dept, 
+    departments dept,
     jobs, 
 	(
 		select 
-			dept.department_id, 
-            avg(salary) 
+			dept.department_id 사번, 
+            avg(salary) 평균연봉
 		from 
 			employees emp, 
 			departments dept 
@@ -106,11 +106,11 @@ from
 			emp.department_id = dept.department_id
 		group by 
 			emp.department_id
-	) as avg_sal
+	) avg_sal -- 모든 사원의 소속부서 평균연봉을 계산
 where 
 	emp.department_id = dept.department_id 
     and emp.job_id = jobs.job_id 
-    and dept.department_id = avg_sal.dept.department_id;
+    and dept.department_id = avg_sal.사번;
 
 -- select avg(salary) from employees emp, departments dept where emp.department_id = dept.department_id
 -- group by emp.department_id;
@@ -119,7 +119,7 @@ where
 select 
 	emp.employee_id 사번,
     concat(emp.first_name,' ',emp.last_name) 이름,
-    jobs.job_title 업무, 
+    jobs.job_title 업무,
     emp.salary 급여
 from 
 	employees emp, 
@@ -169,10 +169,10 @@ group by
 	dept.department_id
 having
 	min(emp.salary) > (
-		select 
-			min(e.salary) 
+		select
+			min(e.salary)
 		from 
-			employees e 
+			employees e
         where 
 			e.department_id = 100
 	);
@@ -216,7 +216,7 @@ having
         e.department_id = 100
 	);
 
--- [문제 11] 업무가 SA_MAN 사원의 정보를 이름,업무,부서명,근무지를 출력하시오.
+-- [문제 11] 업무가 SA_MAN 사원의 정보를 이름,업무,부서명,근무지를 출력하시오. //서브쿼리 써야지!
 select 
 	concat(emp.first_name,' ',emp.last_name) 이름, 
     jobs.job_title 업무,
@@ -234,7 +234,14 @@ where
 	and jobs.job_id = 'SA_MAN';
 
 -- [문제 12] 가장 많은 부하직원을 갖는 MANAGER의 사원번호와 이름을 출력하시오 max(count(emp.manager_id))? // keep
-
+SELECT e.employee_id
+     , CONCAT(e.first_name, ' ', e.last_name) AS Name
+FROM employees e
+WHERE e.employee_id = (SELECT manager_id
+                       FROM employees e
+                       GROUP BY manager_id
+                       ORDER BY COUNT(manager_id) DESC
+                       LIMIT 1);
 
 -- [문제 13] 사원번호가 123인 사원의 업무와 같고
 -- 사원번호가 192인 사원의 급여(SAL))보다 많은 사원의 사원번호,이름,직업,급여를 출력하시오
